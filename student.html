@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ученик - Кибер Кахут</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background: #0a0a0a;
+            color: #0f0;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: rgba(0, 255, 0, 0.05);
+            backdrop-filter: blur(20px);
+            border: 2px solid #0f0;
+            border-radius: 30px;
+            padding: 30px;
+        }
+        
+        .screen { display: none; }
+        .screen.active { display: block; }
+        
+        h1 { font-size: 2rem; text-align: center; margin-bottom: 30px; }
+        
+        .logo { font-size: 60px; text-align: center; margin-bottom: 20px; }
+        
+        input {
+            width: 100%;
+            padding: 18px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #0f0;
+            border-radius: 16px;
+            color: #0f0;
+            font-size: 1.2rem;
+            font-family: 'Share Tech Mono', monospace;
+            margin: 10px 0;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 18px;
+            background: rgba(0, 255, 0, 0.1);
+            border: 2px solid #0f0;
+            border-radius: 16px;
+            color: #0f0;
+            font-size: 1.2rem;
+            font-family: 'Share Tech Mono', monospace;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        
+        .btn:hover {
+            background: rgba(0, 255, 0, 0.2);
+            box-shadow: 0 0 30px #0f0;
+        }
+        
+        .info-box {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #0f0;
+            border-radius: 16px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .question-text {
+            font-size: 1.5rem;
+            margin: 30px 0;
+            text-align: center;
+        }
+        
+        .option {
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #0f0;
+            border-radius: 16px;
+            padding: 18px;
+            margin: 10px 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .option:hover {
+            background: rgba(0, 255, 0, 0.1);
+            box-shadow: 0 0 20px #0f0;
+        }
+        
+        .option.selected {
+            background: rgba(0, 255, 0, 0.2);
+            border-color: #fff;
+        }
+        
+        .option-letter {
+            width: 40px;
+            height: 40px;
+            background: #0f0;
+            color: black;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+        }
+        
+        .status {
+            text-align: center;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 16px;
+        }
+        
+        .status.correct { background: rgba(0, 255, 0, 0.2); }
+        .status.wrong { background: rgba(255, 0, 0, 0.2); }
+        
+        .error {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid #ff0000;
+            color: #ff0000;
+            padding: 12px;
+            border-radius: 12px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="joinScreen" class="screen active">
+            <div class="logo">🛡️</div>
+            <h1>КИБЕР КАХУТ</h1>
+            <div id="errorContainer"></div>
+            <input type="text" id="playerName" placeholder="Твоё имя">
+            <input type="text" id="gameCode" placeholder="Код викторины" maxlength="8">
+            <button id="joinButton" class="btn">🔌 ПОДКЛЮЧИТЬСЯ</button>
+            <a href="index.html" class="btn" style="text-align: center;">← На главную</a>
+        </div>
+
+        <div id="waitingScreen" class="screen">
+            <div class="logo">⏳</div>
+            <h2>ОЖИДАНИЕ...</h2>
+            <div class="info-box">
+                <p>Участник: <span id="displayName">-</span></p>
+                <p>Код: <span id="displayCode">-</span></p>
+                <p>Очки: <span id="displayScore">0</span></p>
+            </div>
+            <button onclick="leaveGame()" class="btn">🚪 ВЫЙТИ</button>
+        </div>
+
+        <div id="questionScreen" class="screen">
+            <div class="question-text" id="questionText"></div>
+            <div id="optionsContainer" class="options"></div>
+            <div id="answerStatus" class="status">Выбери ответ</div>
+        </div>
+    </div>
+
+    <script src="firebase-config.js"></script>
+    <script>
+        let currentGameId = null, playerName = null, currentQuestion = null, hasAnswered = false;
+        const joinScreen = document.getElementById('joinScreen'), waitingScreen = document.getElementById('waitingScreen');
+        const questionScreen = document.getElementById('questionScreen');
+        
+        document.getElementById('joinButton').addEventListener('click', joinGame);
+        
+        function joinGame() {
+            const name = document.getElementById('playerName').value.trim();
+            const code = document.getElementById('gameCode').value.trim();
+            if (!name || name.length < 2) return showError("Введите имя");
+            if (!code || code.length !== 8) return showError("Введите 8 цифр кода");
+            
+            playerName = name; currentGameId = "game_" + code;
+            
+            db.ref(`games/${currentGameId}`).once('value').then(s => {
+                if (!s.exists()) throw new Error("Викторина не найдена");
+                return db.ref(`games/${currentGameId}/players/${name}`).set({ name, joined: Date.now(), score: 0 });
+            }).then(() => {
+                switchScreen('waiting');
+                document.getElementById('displayName').textContent = name;
+                document.getElementById('displayCode').textContent = code;
+                listenToGame();
+            }).catch(e => showError(e.message));
+        }
+        
+        function listenToGame() {
+            db.ref(`games/${currentGameId}`).on('value', s => {
+                const game = s.val();
+                if (!game) return leaveGame();
+                
+                const qid = game.currentQuestion;
+                if (game.status === 'question_active' && qid && (!currentQuestion || currentQuestion.id !== qid)) {
+                    currentQuestion = QUIZ_DATA.questions.find(q => q.id === qid);
+                    if (currentQuestion) showQuestion();
+                }
+            });
+            
+            db.ref(`games/${currentGameId}/players/${playerName}`).on('value', s => {
+                if (s.val()) document.getElementById('displayScore').textContent = s.val().score || 0;
+            });
+        }
+        
+        function showQuestion() {
+            switchScreen('question');
+            document.getElementById('questionText').textContent = currentQuestion.text;
+            hasAnswered = false;
+            
+            const opts = document.getElementById('optionsContainer');
+            opts.innerHTML = '';
+            currentQuestion.options.forEach((opt, i) => {
+                const div = document.createElement('div');
+                div.className = 'option';
+                div.innerHTML = `<div class="option-letter">${String.fromCharCode(65 + i)}</div><div>${opt}</div>`;
+                div.onclick = () => selectAnswer(i);
+                opts.appendChild(div);
+            });
+        }
+        
+        function selectAnswer(idx) {
+            if (hasAnswered) return;
+            hasAnswered = true;
+            
+            const isCorrect = (idx === currentQuestion.correct);
+            db.ref(`games/${currentGameId}/answers/${currentQuestion.id}/${playerName}`).set({
+                answerIndex: idx, isCorrect, timestamp: Date.now()
+            }).then(() => {
+                if (isCorrect) {
+                    db.ref(`games/${currentGameId}/players/${playerName}/score`).transaction(s => (s || 0) + (currentQuestion.points || 1));
+                }
+                const status = document.getElementById('answerStatus');
+                status.textContent = isCorrect ? "✅ ПРАВИЛЬНО!" : "❌ НЕПРАВИЛЬНО";
+                status.className = isCorrect ? "status correct" : "status wrong";
+            });
+        }
+        
+        function switchScreen(name) {
+            [joinScreen, waitingScreen, questionScreen].forEach(s => s.classList.remove('active'));
+            document.getElementById(name + 'Screen').classList.add('active');
+        }
+        
+        function leaveGame() {
+            if (currentGameId && playerName) db.ref(`games/${currentGameId}/players/${playerName}`).remove();
+            location.reload();
+        }
+        
+        function showError(msg) {
+            document.getElementById('errorContainer').innerHTML = `<div class="error">${msg}</div>`;
+            setTimeout(() => document.getElementById('errorContainer').innerHTML = '', 3000);
+        }
+    </script>
+</body>
+</html>
