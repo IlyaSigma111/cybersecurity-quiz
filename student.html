@@ -34,14 +34,26 @@
             border: 2px solid #0f0;
             border-radius: 30px;
             padding: 30px;
+            box-shadow: 0 0 50px rgba(0, 255, 0, 0.2);
         }
         
         .screen { display: none; }
         .screen.active { display: block; }
         
-        h1 { font-size: 2rem; text-align: center; margin-bottom: 30px; }
+        h1 { 
+            font-size: 2rem; 
+            text-align: center; 
+            margin-bottom: 30px;
+            color: #0f0;
+            text-shadow: 0 0 20px #0f0;
+        }
         
-        .logo { font-size: 60px; text-align: center; margin-bottom: 20px; }
+        .logo { 
+            font-size: 60px; 
+            text-align: center; 
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 20px #0f0);
+        }
         
         input {
             width: 100%;
@@ -55,6 +67,11 @@
             margin: 10px 0;
         }
         
+        input:focus {
+            outline: none;
+            box-shadow: 0 0 30px #0f0;
+        }
+        
         .btn {
             width: 100%;
             padding: 18px;
@@ -66,11 +83,13 @@
             font-family: 'Share Tech Mono', monospace;
             cursor: pointer;
             margin: 10px 0;
+            transition: all 0.3s;
         }
         
         .btn:hover {
             background: rgba(0, 255, 0, 0.2);
             box-shadow: 0 0 30px #0f0;
+            transform: translateY(-2px);
         }
         
         .info-box {
@@ -81,10 +100,39 @@
             margin: 20px 0;
         }
         
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(0, 255, 0, 0.2);
+        }
+        
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        
+        .question-header {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #0f0;
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
         .question-text {
             font-size: 1.5rem;
             margin: 30px 0;
             text-align: center;
+            line-height: 1.5;
+        }
+        
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 30px 0;
         }
         
         .option {
@@ -92,16 +140,17 @@
             border: 2px solid #0f0;
             border-radius: 16px;
             padding: 18px;
-            margin: 10px 0;
             cursor: pointer;
             display: flex;
             align-items: center;
             gap: 20px;
+            transition: all 0.3s;
         }
         
         .option:hover {
             background: rgba(0, 255, 0, 0.1);
             box-shadow: 0 0 20px #0f0;
+            transform: translateX(5px);
         }
         
         .option.selected {
@@ -119,6 +168,7 @@
             align-items: center;
             justify-content: center;
             font-weight: 900;
+            font-size: 1.2rem;
         }
         
         .status {
@@ -126,10 +176,27 @@
             padding: 20px;
             margin-top: 20px;
             border-radius: 16px;
+            font-size: 1.2rem;
+            font-weight: bold;
         }
         
-        .status.correct { background: rgba(0, 255, 0, 0.2); }
-        .status.wrong { background: rgba(255, 0, 0, 0.2); }
+        .status.correct { 
+            background: rgba(0, 255, 0, 0.2);
+            border: 1px solid #0f0;
+            color: #0f0;
+        }
+        
+        .status.wrong { 
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid #ff4444;
+            color: #ff4444;
+        }
+        
+        .status.waiting {
+            background: rgba(255, 255, 0, 0.1);
+            border: 1px solid yellow;
+            color: yellow;
+        }
         
         .error {
             background: rgba(255, 0, 0, 0.2);
@@ -138,130 +205,433 @@
             padding: 12px;
             border-radius: 12px;
             margin: 10px 0;
+            text-align: center;
+        }
+        
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(0, 255, 0, 0.3);
+            border-top: 3px solid #0f0;
+            border-radius: 50%;
+            margin: 20px auto;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .player-stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 20px 0;
+            font-size: 1.1rem;
+        }
+        
+        .player-stats span {
+            color: #0f0;
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.6rem;
+            }
+            
+            .question-text {
+                font-size: 1.2rem;
+            }
+            
+            .option {
+                padding: 15px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- ЭКРАН ВХОДА -->
         <div id="joinScreen" class="screen active">
             <div class="logo">🛡️</div>
             <h1>КИБЕР КАХУТ</h1>
             <div id="errorContainer"></div>
-            <input type="text" id="playerName" placeholder="Твоё имя">
-            <input type="text" id="gameCode" placeholder="Код викторины" maxlength="8">
+            <input type="text" id="playerName" placeholder="Твоё имя" maxlength="15">
+            <input type="text" id="gameCode" placeholder="Код викторины" maxlength="8" inputmode="numeric" pattern="[0-9]*">
             <button id="joinButton" class="btn">🔌 ПОДКЛЮЧИТЬСЯ</button>
             <a href="index.html" class="btn" style="text-align: center;">← На главную</a>
         </div>
 
+        <!-- ЭКРАН ОЖИДАНИЯ -->
         <div id="waitingScreen" class="screen">
             <div class="logo">⏳</div>
-            <h2>ОЖИДАНИЕ...</h2>
+            <h2 style="text-align: center; margin-bottom: 20px;">ОЖИДАНИЕ...</h2>
+            <div class="loader"></div>
             <div class="info-box">
-                <p>Участник: <span id="displayName">-</span></p>
-                <p>Код: <span id="displayCode">-</span></p>
-                <p>Очки: <span id="displayScore">0</span></p>
+                <div class="info-item">
+                    <span>Участник:</span>
+                    <strong id="displayName">-</strong>
+                </div>
+                <div class="info-item">
+                    <span>Код:</span>
+                    <strong id="displayCode">-</strong>
+                </div>
+                <div class="info-item">
+                    <span>Очки:</span>
+                    <strong id="displayScore">0</strong>
+                </div>
             </div>
             <button onclick="leaveGame()" class="btn">🚪 ВЫЙТИ</button>
         </div>
 
+        <!-- ЭКРАН ВОПРОСА -->
         <div id="questionScreen" class="screen">
-            <div class="question-text" id="questionText"></div>
-            <div id="optionsContainer" class="options"></div>
-            <div id="answerStatus" class="status">Выбери ответ</div>
+            <div class="question-header">
+                <span style="color: #0f0;">КИБЕРБЕЗОПАСНОСТЬ</span>
+                <span id="questionCounter">1/30</span>
+            </div>
+            
+            <div class="question-text" id="questionText">
+                Загрузка вопроса...
+            </div>
+            
+            <div class="options" id="optionsContainer">
+                <!-- Варианты загрузятся через JS -->
+            </div>
+            
+            <div class="status waiting" id="answerStatus">
+                ⏳ Выбери вариант ответа
+            </div>
         </div>
     </div>
 
     <script src="firebase-config.js"></script>
     <script>
-        let currentGameId = null, playerName = null, currentQuestion = null, hasAnswered = false;
-        const joinScreen = document.getElementById('joinScreen'), waitingScreen = document.getElementById('waitingScreen');
-        const questionScreen = document.getElementById('questionScreen');
+        // ============================================
+        // student.js - ИСПРАВЛЕННАЯ ВЕРСИЯ
+        // ============================================
+
+        // Проверка загрузки вопросов
+        console.log("🔍 Проверка QUIZ_DATA:", window.QUIZ_DATA);
         
-        document.getElementById('joinButton').addEventListener('click', joinGame);
-        
-        function joinGame() {
-            const name = document.getElementById('playerName').value.trim();
-            const code = document.getElementById('gameCode').value.trim();
-            if (!name || name.length < 2) return showError("Введите имя");
-            if (!code || code.length !== 8) return showError("Введите 8 цифр кода");
-            
-            playerName = name; currentGameId = "game_" + code;
-            
-            db.ref(`games/${currentGameId}`).once('value').then(s => {
-                if (!s.exists()) throw new Error("Викторина не найдена");
-                return db.ref(`games/${currentGameId}/players/${name}`).set({ name, joined: Date.now(), score: 0 });
-            }).then(() => {
-                switchScreen('waiting');
-                document.getElementById('displayName').textContent = name;
-                document.getElementById('displayCode').textContent = code;
-                listenToGame();
-            }).catch(e => showError(e.message));
+        if (!window.QUIZ_DATA) {
+            document.body.innerHTML = '<div style="color:red; padding:50px; font-size:2rem;">❌ ОШИБКА: вопросы не загружены</div>';
+            throw new Error("QUIZ_DATA не найден");
         }
-        
-        function listenToGame() {
-            db.ref(`games/${currentGameId}`).on('value', s => {
-                const game = s.val();
-                if (!game) return leaveGame();
+
+        // Глобальные переменные
+        let currentGameId = null;
+        let playerName = null;
+        let currentQuestion = null;
+        let hasAnswered = false;
+        let gameListener = null;
+
+        // Элементы DOM
+        const joinScreen = document.getElementById('joinScreen');
+        const waitingScreen = document.getElementById('waitingScreen');
+        const questionScreen = document.getElementById('questionScreen');
+        const joinButton = document.getElementById('joinButton');
+        const errorContainer = document.getElementById('errorContainer');
+        const playerNameInput = document.getElementById('playerName');
+        const gameCodeInput = document.getElementById('gameCode');
+        const displayName = document.getElementById('displayName');
+        const displayCode = document.getElementById('displayCode');
+        const displayScore = document.getElementById('displayScore');
+        const questionText = document.getElementById('questionText');
+        const optionsContainer = document.getElementById('optionsContainer');
+        const answerStatus = document.getElementById('answerStatus');
+        const questionCounter = document.getElementById('questionCounter');
+
+        // Показать ошибку
+        function showError(message) {
+            errorContainer.innerHTML = `<div class="error">${message}</div>`;
+            setTimeout(() => { errorContainer.innerHTML = ''; }, 3000);
+        }
+
+        // Переключить экран
+        function switchScreen(screenName) {
+            [joinScreen, waitingScreen, questionScreen].forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenName + 'Screen').classList.add('active');
+        }
+
+        // Сбросить состояние вопроса (ВАЖНО!)
+        function resetQuestionState() {
+            hasAnswered = false;
+            currentQuestion = null;
+            
+            // Очистить UI
+            questionText.textContent = 'Загрузка вопроса...';
+            optionsContainer.innerHTML = '';
+            
+            // Сбросить статус на ожидание
+            answerStatus.textContent = '⏳ Выбери вариант ответа';
+            answerStatus.className = 'status waiting';
+            
+            // Убрать выделение со всех опций
+            document.querySelectorAll('.option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+        }
+
+        // Подключиться к игре
+        function joinGame() {
+            const name = playerNameInput.value.trim();
+            const code = gameCodeInput.value.trim();
+            
+            if (!name || name.length < 2) {
+                showError("Введите имя (минимум 2 символа)");
+                return;
+            }
+            
+            if (!code || code.length !== 8 || !/^\d+$/.test(code)) {
+                showError("Введите 8 цифр кода викторины");
+                return;
+            }
+            
+            playerName = name;
+            currentGameId = "game_" + code;
+            
+            joinButton.disabled = true;
+            joinButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ПОДКЛЮЧЕНИЕ...';
+            
+            // Проверяем существование игры
+            db.ref(`games/${currentGameId}`).once('value').then(snapshot => {
+                if (!snapshot.exists()) {
+                    throw new Error(`Викторина с кодом ${code} не найдена`);
+                }
                 
-                const qid = game.currentQuestion;
-                if (game.status === 'question_active' && qid && (!currentQuestion || currentQuestion.id !== qid)) {
-                    currentQuestion = QUIZ_DATA.questions.find(q => q.id === qid);
-                    if (currentQuestion) showQuestion();
+                const game = snapshot.val();
+                
+                if (game.players && game.players[name]) {
+                    throw new Error("Участник с таким именем уже есть");
+                }
+                
+                // Регистрируем игрока
+                return db.ref(`games/${currentGameId}/players/${name}`).set({
+                    name: name,
+                    joined: Date.now(),
+                    score: 0,
+                    device: /Mobi|Android/i.test(navigator.userAgent) ? "📱 Телефон" : "💻 Компьютер"
+                });
+            }).then(() => {
+                console.log("✅ Подключен к игре:", currentGameId);
+                
+                displayName.textContent = playerName;
+                displayCode.textContent = code;
+                
+                switchScreen('waiting');
+                listenToGame();
+                
+                joinButton.disabled = false;
+                joinButton.innerHTML = '🔌 ПОДКЛЮЧИТЬСЯ';
+                
+            }).catch(error => {
+                showError(error.message);
+                joinButton.disabled = false;
+                joinButton.innerHTML = '🔌 ПОДКЛЮЧИТЬСЯ';
+            });
+        }
+
+        // Слушать изменения в игре
+        function listenToGame() {
+            if (!currentGameId) return;
+            
+            // Отписаться от предыдущего слушателя
+            if (gameListener) {
+                db.ref(`games/${currentGameId}`).off('value', gameListener);
+            }
+            
+            gameListener = db.ref(`games/${currentGameId}`).on('value', snapshot => {
+                const game = snapshot.val();
+                if (!game) {
+                    console.log("Игра удалена");
+                    leaveGame();
+                    return;
+                }
+                
+                // Обновляем счёт игрока
+                if (game.players && game.players[playerName]) {
+                    displayScore.textContent = game.players[playerName].score || 0;
+                }
+                
+                // Обрабатываем статус игры
+                const currentQuestionId = game.currentQuestion;
+                
+                // Если вопрос активен и это новый вопрос (не тот же самый)
+                if (game.status === "question_active" && currentQuestionId) {
+                    
+                    // Находим вопрос в базе
+                    const question = QUIZ_DATA.questions.find(q => q.id === currentQuestionId);
+                    
+                    if (question) {
+                        // Проверяем, изменился ли вопрос
+                        if (!currentQuestion || currentQuestion.id !== question.id) {
+                            console.log("📌 Новый вопрос:", question.id);
+                            
+                            // СБРАСЫВАЕМ ВСЁ для нового вопроса
+                            resetQuestionState();
+                            
+                            // Показываем новый вопрос
+                            currentQuestion = question;
+                            displayQuestion(question);
+                        }
+                    }
+                }
+                
+                // Если результаты показываются, но мы ещё не отвечали
+                if (game.status === "showing_results" && !hasAnswered && currentQuestion) {
+                    // Показываем результат, но не меняем статус принудительно
                 }
             });
-            
-            db.ref(`games/${currentGameId}/players/${playerName}`).on('value', s => {
-                if (s.val()) document.getElementById('displayScore').textContent = s.val().score || 0;
-            });
         }
-        
-        function showQuestion() {
+
+        // Показать вопрос
+        function displayQuestion(question) {
             switchScreen('question');
-            document.getElementById('questionText').textContent = currentQuestion.text;
-            hasAnswered = false;
             
-            const opts = document.getElementById('optionsContainer');
-            opts.innerHTML = '';
-            currentQuestion.options.forEach((opt, i) => {
-                const div = document.createElement('div');
-                div.className = 'option';
-                div.innerHTML = `<div class="option-letter">${String.fromCharCode(65 + i)}</div><div>${opt}</div>`;
-                div.onclick = () => selectAnswer(i);
-                opts.appendChild(div);
+            questionText.textContent = question.text;
+            questionCounter.textContent = `${question.id}/30`;
+            
+            // Очищаем и создаём варианты ответов
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'option';
+                optionDiv.dataset.index = index;
+                optionDiv.innerHTML = `
+                    <div class="option-letter">${String.fromCharCode(65 + index)}</div>
+                    <div>${option}</div>
+                `;
+                
+                optionDiv.addEventListener('click', () => selectAnswer(index));
+                optionsContainer.appendChild(optionDiv);
             });
+            
+            // Убеждаемся, что статус сброшен
+            answerStatus.textContent = '⏳ Выбери вариант ответа';
+            answerStatus.className = 'status waiting';
         }
-        
-        function selectAnswer(idx) {
-            if (hasAnswered) return;
+
+        // Выбрать ответ
+        function selectAnswer(answerIndex) {
+            if (hasAnswered) {
+                console.log("❌ Уже ответил на этот вопрос");
+                return;
+            }
+            
+            if (!currentQuestion || !currentGameId || !playerName) {
+                console.log("❌ Нет активного вопроса");
+                return;
+            }
+            
             hasAnswered = true;
             
-            const isCorrect = (idx === currentQuestion.correct);
-            db.ref(`games/${currentGameId}/answers/${currentQuestion.id}/${playerName}`).set({
-                answerIndex: idx, isCorrect, timestamp: Date.now()
-            }).then(() => {
-                if (isCorrect) {
-                    db.ref(`games/${currentGameId}/players/${playerName}/score`).transaction(s => (s || 0) + (currentQuestion.points || 1));
+            // Подсветить выбранный вариант
+            document.querySelectorAll('.option').forEach((opt, idx) => {
+                opt.classList.remove('selected');
+                if (idx === answerIndex) {
+                    opt.classList.add('selected');
                 }
-                const status = document.getElementById('answerStatus');
-                status.textContent = isCorrect ? "✅ ПРАВИЛЬНО!" : "❌ НЕПРАВИЛЬНО";
-                status.className = isCorrect ? "status correct" : "status wrong";
+            });
+            
+            // Проверяем правильность
+            const isCorrect = (answerIndex === currentQuestion.correct);
+            
+            // Отправляем ответ в Firebase
+            db.ref(`games/${currentGameId}/answers/${currentQuestion.id}/${playerName}`).set({
+                answerIndex: answerIndex,
+                isCorrect: isCorrect,
+                timestamp: Date.now()
+            }).then(() => {
+                // Если ответ правильный, увеличиваем счёт
+                if (isCorrect) {
+                    db.ref(`games/${currentGameId}/players/${playerName}/score`).transaction(score => {
+                        return (score || 0) + (currentQuestion.points || 1);
+                    });
+                }
+                
+                // Показываем статус
+                answerStatus.textContent = isCorrect ? "✅ ПРАВИЛЬНО!" : "❌ НЕПРАВИЛЬНО";
+                answerStatus.className = isCorrect ? "status correct" : "status wrong";
+                
+                console.log(`📊 Ответ: ${isCorrect ? '✅' : '❌'}`);
+                
+            }).catch(error => {
+                console.error("Ошибка отправки ответа:", error);
+                showError("Ошибка при отправке ответа");
+                hasAnswered = false; // Разрешить попробовать снова
             });
         }
-        
-        function switchScreen(name) {
-            [joinScreen, waitingScreen, questionScreen].forEach(s => s.classList.remove('active'));
-            document.getElementById(name + 'Screen').classList.add('active');
-        }
-        
+
+        // Выйти из игры
         function leaveGame() {
-            if (currentGameId && playerName) db.ref(`games/${currentGameId}/players/${playerName}`).remove();
-            location.reload();
+            if (currentGameId && playerName) {
+                db.ref(`games/${currentGameId}/players/${playerName}`).remove();
+            }
+            
+            // Отписаться от слушателя
+            if (gameListener && currentGameId) {
+                db.ref(`games/${currentGameId}`).off('value', gameListener);
+            }
+            
+            // Сбросить переменные
+            currentGameId = null;
+            playerName = null;
+            currentQuestion = null;
+            hasAnswered = false;
+            gameListener = null;
+            
+            // Очистить поля ввода
+            playerNameInput.value = '';
+            gameCodeInput.value = '';
+            
+            // Сбросить UI вопроса
+            resetQuestionState();
+            
+            // Вернуться на экран входа
+            switchScreen('join');
         }
-        
-        function showError(msg) {
-            document.getElementById('errorContainer').innerHTML = `<div class="error">${msg}</div>`;
-            setTimeout(() => document.getElementById('errorContainer').innerHTML = '', 3000);
-        }
+
+        // Валидация ввода кода
+        gameCodeInput.addEventListener('input', function() {
+            this.value = this.value.replace(/\D/g, '').substring(0, 8);
+        });
+
+        // Обработчики Enter
+        playerNameInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                gameCodeInput.focus();
+            }
+        });
+
+        gameCodeInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                joinGame();
+            }
+        });
+
+        // Кнопка подключения
+        joinButton.addEventListener('click', joinGame);
+
+        // Экспорт функций
+        window.leaveGame = leaveGame;
+        window.selectAnswer = selectAnswer;
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("✅ Student panel загружен");
+            playerNameInput.focus();
+        });
     </script>
 </body>
 </html>
