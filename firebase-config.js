@@ -1,16 +1,16 @@
 // ============================================
-// firebase-config.js - КИБЕРБЕЗОПАСНОСТЬ (УПРОЩЕННАЯ ВЕРСИЯ)
+// firebase-config.js - КИБЕРБЕЗОПАСНОСТЬ (ИСПРАВЛЕННАЯ ВЕРСИЯ)
 // ============================================
 
-// 🔥 ТВОЙ КОНФИГ FIREBASE
+// 🔥 НОВЫЙ КОНФИГ FIREBASE
 const firebaseConfig = {
-  apiKey: "AIzaSyC-rP_14WecIFKWJHGvlszK16voEKNQ1Gw",
-  authDomain: "chessproject-3d878.firebaseapp.com",
-  databaseURL: "https://chessproject-3d878-default-rtdb.firebaseio.com",
-  projectId: "chessproject-3d878",
-  storageBucket: "chessproject-3d878.firebasestorage.app",
-  messagingSenderId: "735951507631",
-  appId: "1:735951507631:web:587083ce4d0f34e01f845a"
+  apiKey: "AIzaSyCjLMcfXAZkbY0n7fcsXgYERjec6K7r1L8",
+  authDomain: "kiberbezopasnost-b731f.firebaseapp.com",
+  databaseURL: "https://kiberbezopasnost-b731f-default-rtdb.firebaseio.com",
+  projectId: "kiberbezopasnost-b731f",
+  storageBucket: "kiberbezopasnost-b731f.firebasestorage.app",
+  messagingSenderId: "11244585425",
+  appId: "1:11244585425:web:dcfc3fab54d6951c6120f0"
 };
 
 // Инициализация Firebase
@@ -20,11 +20,20 @@ try {
     }
     window.db = firebase.database();
     console.log("✅ Firebase инициализирован (КИБЕРБЕЗОПАСНОСТЬ)");
+    
+    // Проверка подключения
+    window.db.ref('.info/connected').on('value', (snap) => {
+        if (snap.val() === true) {
+            console.log("✅ Подключено к Firebase серверу!");
+        } else {
+            console.log("⚠️ Нет подключения к Firebase серверу");
+        }
+    });
 } catch (error) {
     console.error("❌ Ошибка Firebase:", error);
 }
 
-// 📚 30 ВОПРОСОВ ПО КИБЕРБЕЗОПАСНОСТИ (УПРОЩЕННЫЕ)
+// 📚 30 ВОПРОСОВ ПО КИБЕРБЕЗОПАСНОСТИ
 const QUIZ_DATA = {
     id: "cybersecurity_quiz",
     title: "Кибербезопасность: Защита в цифровом мире",
